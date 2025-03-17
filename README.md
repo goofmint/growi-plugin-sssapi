@@ -1,54 +1,22 @@
-# GROIW Plugin template for script
+# GROIW SSSAPI Plugin
 
-This is a template for creating a GROWI script plugin.
+This is a GROWI plugin integrating with [SSSAPI](https://sssapi.app/).
 
 ## Usage
 
-### Download or folk this repository.
-
-```bash
-git clone git@github.com:goofmint/growi-plugin-script-template.git
+```markdown
+::sssapi[https://api.sssapi.app/ID]
 ```
 
-### Change the name of the plugin in package.json.
+When you click the row, display all of the data.
 
-```js
-{
-  "name": "growi-plugin-script-template",  // Change this name
-  "version": "1.0.0",
-  "description": "GROWI plugin template for script", // Change this description
-	:
-}
+### Options
+
+```markdown
+::sssapi[https://api.sssapi.app/ID]{show=id,title,date}
 ```
 
-### Edit those files
-
-Of course, you can add or remove files as you like.
-
-- client-entry.tsx
-- src/Hello.tsx
-- src/Hello.css
-- src/Demo.tsx
-
-### Preview the plugin
-
-```bash
-yarn dev
-```
-
-### Build the plugin
-
-```bash
-yarn build
-```
-
-## Publish the plugin at GROWI
-
-Add a topic `growi-plugin` on your GitHub repository.
-
-Then, you can see your plugin on the GROWI plugin list page below.
-
-https://growi.org/plugins
+- `show`: Specify the fields to show.
 
 ## License
 

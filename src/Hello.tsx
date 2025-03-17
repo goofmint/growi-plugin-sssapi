@@ -13,51 +13,62 @@ declare const growiFacade : {
   react: typeof React,
 };
 
-type FakeJson = {
-  userId: number;
-  id: number;
-  title: string;
-  completed: boolean;
-}
 export const helloGROWI = (Tag: React.FunctionComponent<any>): React.FunctionComponent<any> => {
   return ({ children, ...props }) => {
     try {
       const { react } = growiFacade;
-      const { useEffect, useCallback, useState } = react;
-      // ボタンのクリックイベントでカウントアップするためのstate
-      const [count, setCount] = useState(0);
+      const { useEffect, useState } = react;
       // 外部データを取得して適用するためのstate
-      const [obj, setObj] = useState<FakeJson | null>(null);
-
-      // useEffectで外部データを取得
-      const getFakeJson = async(count: number) => {
-        const url = `https://jsonplaceholder.typicode.com/todos/${count}`;
+      const [rows, setRows] = useState<{[key: string]: string}[]>([]);
+      const [headers, setHeaders] = useState<string[]>([]);
+      const [detail, setDetail] = useState<{[key: string]: string} | null>(null);
+      const getData = async(url: string) => {
         const response = await fetch(url);
-        const json = await response.json() as FakeJson;
-        setObj(json);
+        const json = await response.json();
+        setRows(json);
+        setHeaders(Object.keys(json[0] || {}));
       };
-
-      // countが変更されたら外部データを取得
-      useEffect(() => {
-        if (count > 0) getFakeJson(count);
-      }, [count]);
-
-      const { plugin } = JSON.parse(props.title);
-      if (plugin) {
+      const { sssapi, show } = JSON.parse(props.title);
+      if (sssapi) {
+        const { href } = props;
+        useEffect(() => {
+          getData(href);
+        }, [href]);
+        const displayFields = show ? show.split(',') : [];
         return (
           <>
-            <a {...props}>{children}</a>
-            <div>Count: {count}</div>
-            <button
-              onClick={useCallback(() => setCount(c => c + 1), [])}
-            >
-              Up
-            </button>
-            { obj && (
+            <table className='table'>
+              <thead>
+                <tr>
+                  {headers.map(header => (
+                    (displayFields.length > 0 && !displayFields.includes(header)) ? null
+                      : <th key={header}>{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    onClick={() => setDetail(row)}
+                  >
+                    {headers.map(header => (
+                      (displayFields.length > 0 && !displayFields.includes(header)) ? null
+                        : <td key={header}>{row[header]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {detail && (
               <div>
-                <h2>{obj.title}</h2>
-                <div>{obj.id} & {obj.userId}</div>
-                <p>{obj.completed ? 'Completed' : 'Not Completed'}</p>
+                <ul>
+                  {Object.entries(detail).map(([key, value]) => (
+                    <li key={key}>{key}:<br />
+                      {value}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </>
@@ -100,28 +111,17 @@ export const remarkPlugin: Plugin = () => {
     // :::plugin[xxx]{hello=growi} -> containerDirective
     visit(tree, (node: Node) => {
       const n = node as unknown as GrowiNode;
-      if (n.name !== 'plugin') return;
+      if (n.name !== 'sssapi') return;
       const data = n.data || (n.data = {});
       // Render your component
-      const { value } = n.children[0] || { value: '' };
+      const { url } = n.children[0] || { url: '' };
       data.hName = 'a'; // Tag name
-      data.hChildren = [{ type: 'text', value: `${value}, growi!` }]; // Children
+      data.hChildren = []; // Children
       // Set properties
       data.hProperties = {
-        href: 'https://example.com/rss',
-        title: JSON.stringify({ ...n.attributes, ...{ plugin: true } }), // Pass to attributes to the component
+        href: url,
+        title: JSON.stringify({ ...n.attributes, ...{ sssapi: true } }), // Pass to attributes to the component
       };
-    });
-  };
-};
-
-export const rehypePlugin: Plugin = () => {
-  return (tree: Node) => {
-    // node type is 'element' or 'text' (2nd argument)
-    visit(tree, 'text', (node: Node) => {
-      const n = node as unknown as GrowiNode;
-      const { value } = n;
-      n.value = `${value} 😄`;
     });
   };
 };
