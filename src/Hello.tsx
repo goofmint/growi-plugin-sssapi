@@ -109,7 +109,7 @@ export const remarkPlugin: Plugin = () => {
     // :plugin[xxx]{hello=growi} -> textDirective
     // ::plugin[xxx]{hello=growi} -> leafDirective
     // :::plugin[xxx]{hello=growi} -> containerDirective
-    visit(tree, (node: Node) => {
+    visit(tree, 'leafDirective', (node: Node) => {
       const n = node as unknown as GrowiNode;
       if (n.name !== 'sssapi') return;
       const data = n.data || (n.data = {});
